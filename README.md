@@ -15,7 +15,7 @@ This repository contains two major projects completed for **CS672 – Introducti
 The goal is to understand factors influencing taxi ride durations and build neural network models that accurately predict trip time using enriched features, including NYC weather conditions.
 
 
-# 2. Deep Learning Regression for Trip Duration Prediction
+# Deep Learning Regression for Trip Duration Prediction
 
 This project builds and compares multiple neural network architectures to predict NYC Yellow Taxi trip duration using both **trip features** and **weather data**.
 
