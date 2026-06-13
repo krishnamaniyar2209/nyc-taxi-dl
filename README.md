@@ -1,133 +1,122 @@
 <p align="center">
-  <img src="https://github.com/krishnam229/Deep-Learning/blob/main/banner.png" width="900">
+  <img src="https://img.shields.io/badge/Python-3.10-blue?logo=python&logoColor=white">
+  <img src="https://img.shields.io/badge/TensorFlow-2.x-orange?logo=tensorflow">
+  <img src="https://img.shields.io/badge/Notebook-Jupyter-lightgrey?logo=jupyter">
+  <img src="https://img.shields.io/badge/Pace%20University-CS672-blue">
 </p>
 
-![Python](https://img.shields.io/badge/Python-3.10-blue)
-![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange)
-![Jupyter Notebook](https://img.shields.io/badge/Notebook-Jupyter-lightgrey)
+# 🚕 Deep Learning–Based Prediction of NYC Yellow Taxi Trip Duration Using Weather Data
 
-# Deep Learning–Based Prediction of NYC Yellow Taxi Trip Duration Using Weather Data
+A neural-network regression project that predicts **NYC Yellow Taxi trip duration** from trip and weather features, comparing three architectures — built for **CS672: Introduction to Deep Learning (Fall 2025)** at Pace University.
 
-This repository contains two major projects completed for **CS672 – Introduction to Deep Learning (Fall 2025)** at Pace University:
-
-**Deep Learning Regression Models for Trip Duration Prediction**
-
-The goal is to understand factors influencing taxi ride durations and build neural network models that accurately predict trip time using enriched features, including NYC weather conditions.
-
-
-# Deep Learning Regression for Trip Duration Prediction
-
-This project builds and compares multiple neural network architectures to predict NYC Yellow Taxi trip duration using both **trip features** and **weather data**.
-
-### Steps Performed
-- Retrieved NYC climate data for January 2020 from Meteostat.  
-- Merged weather data with taxi records based on date.  
-- Scaled numeric features using StandardScaler.  
-- Developed and trained three neural network models:
-  1. **Linear Regression (no hidden layers)**  
-  2. **Multi-Layer Perceptron (MLP)**  
-  3. **Deep Neural Network (DNN)** with dropout and deeper architecture  
-
-### Training Configuration
-- **Loss Functions:** MSE, MAE  
-- **Optimizers:** SGD, Adam, RMSprop  
-- **Learning Rates:** 0.01, 0.001, 0.0001  
-- **Epochs:** 100  
-- **Batch Size:** 32  
-
-Training and validation loss curves were analyzed to assess model stability and accuracy.
-
-### Best Model
-Based on validation MAE:
-
-> **DNN with RMSprop (lr = 0.001)**  
-> Showed the most stable and accurate performance.
+> ⚠️ **Leakage-free by design.** Quantities known only *after* a trip ends — `avg_mph` (= distance ÷ duration), `fare_amount`, `tip_amount` — are deliberately **excluded** because they encode the target. Reported errors therefore reflect realistic prediction from information available at (or estimable before) pickup.
 
 ---
 
-# 3. Repository Structure
-
-```text
-📦 nyc-taxi-dl
-│
-├── NYC_Taxi_Trip_Duration_DeepLearning.ipynb
-└── README.md                                  # Documentation
-```
+## 📋 Table of Contents
+- [Overview](#-overview)
+- [Dataset](#-dataset)
+- [Features](#-features)
+- [Methodology](#-methodology)
+- [Models & Results](#-models--results)
+- [How to Run](#-how-to-run)
+- [Environment](#-environment)
+- [Team](#-team)
 
 ---
 
-# 4. Model Performance Summary
+## 🔬 Overview
 
-| Model                     | Optimizer | Learning Rate | Val MAE | Val MSE |
-|---------------------------|-----------|----------------|---------|---------|
-| Linear Regression (TF)    | Adam      | 0.001          | 0.29    | 0.84    |
-| MLP (2 Hidden Layers)     | RMSprop   | 0.001          | 0.24    | 0.56    |
-| DNN (Deep Neural Network) | RMSprop   | 0.001          | **0.19** | **0.32** |
+The goal is to predict `trip_duration_min` for NYC Yellow Taxi rides using trip characteristics enriched with daily weather data. Three TensorFlow/Keras models are trained and compared:
+
+1. **Linear Regression** (no hidden layers)
+2. **MLP** (two hidden layers)
+3. **DNN** (deeper network with dropout)
+
+Each is trained with two optimizers (Adam, RMSprop) and evaluated with MAE and MSE.
+
+---
+
+## 📊 Dataset
+
+| Source | Details |
+|---|---|
+| **Taxi trips** | [NYC TLC — Yellow Taxi, January 2020](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) (Parquet) |
+| **Weather** | Daily NYC weather (Jan 2020) via the **Meteostat** API (Wall Street station) |
+| **Target** | `trip_duration_min` = drop-off − pickup, in minutes |
+| **Sample used** | 5% of cleaned trips (~314,700 rows) for training efficiency |
+
+**Cleaning filters:** trip duration 1–180 min, trip distance 0–50 mi, non-null distance/duration. Taxi and weather are merged on the pickup date.
+
+---
+
+## 🧩 Features
+
+**Leakage-free feature set** (known or estimable at pickup):
+
+| Group | Features |
+|---|---|
+| Trip | `passenger_count`, `trip_distance` |
+| Time | `pickup_hour`, `pickup_weekday`, `is_weekend`, `is_rush_hour` |
+| Weather | `tavg`, `tmin`, `tmax`, `prcp`, `snow`, `wdir`, `wspd`, `pres` |
+
+> `trip_distance` is the metered distance; in production it would be replaced by a route-estimated distance available at pickup.
+
+---
+
+## 🔬 Methodology
+
+1. **Data load & merge** — Yellow Taxi (Jan 2020) + daily Meteostat weather, joined on pickup date.
+2. **Feature engineering** — duration target, time features, rainy flag, temperature buckets.
+3. **EDA** — correlation heatmap, rain vs. clear-day duration, temperature effect, weather pair-plots.
+4. **Time-aware split** — sorted by pickup time, **80% train / 20% validation** (no shuffling → no future leakage). Train ≈ 251,800 · Val ≈ 62,900.
+5. **Scaling** — `StandardScaler` fit on training data only.
+6. **Training** — MSE loss, MAE metric, 40 epochs, batch size 32, `EarlyStopping` (patience 5, restore best weights), optimizers Adam & RMSprop at lr = 0.001.
+
+---
+
+## 📈 Models & Results
+
+| Model | Optimizer | Val MAE (min) | Val MSE |
+|---|---|---|---|
+| **MLP** | Adam | **3.31** | **25.49** |
+| DNN | Adam | 3.32 | 27.38 |
+| DNN | RMSprop | 3.46 | 28.14 |
+| MLP | RMSprop | 3.55 | 28.88 |
+| Linear | RMSprop | 4.22 | 37.48 |
+| Linear | Adam | 4.23 | 37.58 |
+
+### 🏆 Best Model
+> **MLP (Adam, lr = 0.001) — Validation MAE ≈ 3.31 minutes** (MSE ≈ 25.49)
 
 ### Interpretation
-- The **DNN model** performed best due to its ability to capture non-linear relationships.  
-- The **MLP** showed moderate accuracy with mild overfitting.  
-- **Linear Regression** underperformed, confirming that trip duration prediction benefits from deeper architectures.
+- **MLP and DNN beat Linear Regression by ~0.9 minutes**, confirming a mild non-linear relationship between the features and trip duration.
+- All neural models predict within **~3.3 minutes** — a realistic error once post-trip leakage is removed. (An earlier leaky version reported an artificial ~0.19 min, driven by `avg_mph`, which is computed *from* the target.)
+- `trip_distance` is the dominant predictor; weather adds a small but measurable effect (trips run slightly longer on rainy days).
 
 ---
 
-# 5. Project Highlights
-
-- Built a complete end-to-end **data science + deep learning pipeline**.  
-- Performed detailed **EDA, data cleaning, and feature engineering**.  
-- Integrated real **NYC weather data** to improve prediction accuracy.  
-- Trained and compared **three neural network architectures**.  
-- Tuned hyperparameters across optimizers, learning rates, and layers.  
-- Evaluated models using **MAE** and **MSE**, visualizing training curves.  
-- Best performance achieved using **DNN with RMSprop**.  
-- Designed a clean, professional **GitHub structure and documentation**.
-
----
-
-# 6. Environment & Dependencies
-
-This project uses:
-
-- Python 3.x  
-- TensorFlow 2.x  
-- pandas  
-- numpy  
-- scikit-learn  
-- seaborn  
-- matplotlib  
-
-Install required packages:
-
-```bash
-pip install tensorflow pandas numpy scikit-learn matplotlib seaborn
-```
-
-Kernel used during development: **Python (dl2020) – Anaconda environment**
-
----
-
-# 7. How to Run
+## 🚀 How to Run
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/krishnam229/Deep-Learning.git
+   git clone https://github.com/krishnamaniyar2209/nyc-taxi-dl.git
+   cd nyc-taxi-dl
    ```
-2. Open notebooks in **Jupyter Notebook** or **VS Code**.  
-3. Ensure all dependencies are installed.  
-4. Run all cells sequentially to reproduce the analysis and results.
+2. Open the notebook in **Google Colab** or Jupyter.
+3. Run the install cell, then **Runtime → Restart session**, then run all cells top to bottom. Weather data is fetched automatically via Meteostat.
 
 ---
 
-# 8. Closing Notes
+## 🛠️ Environment
 
-This repository demonstrates the complete pipeline for:
-
-- Data ingestion  
-- Exploratory analysis  
-- Feature engineering  
-- Deep learning model development  
-- Performance evaluation  
-
-Feel free to explore the notebooks and reach out with any questions.
+```bash
+pip install "meteostat==1.6.8" "pandas==2.2.2" tensorflow scikit-learn matplotlib seaborn
+```
+Python 3.10 · TensorFlow 2.x · pandas 2.2 · scikit-learn · seaborn · matplotlib · meteostat 1.6.8
 
 ---
+
+## 📄 License
+
+This project is licensed under the MIT License.
