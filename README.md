@@ -1,11 +1,11 @@
+# 🚕 Deep Learning Prediction of NYC Yellow Taxi Trip Duration Using Weather Data
+
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10-blue?logo=python&logoColor=white">
   <img src="https://img.shields.io/badge/TensorFlow-2.x-orange?logo=tensorflow">
   <img src="https://img.shields.io/badge/Notebook-Jupyter-lightgrey?logo=jupyter">
   <img src="https://img.shields.io/badge/Pace%20University-CS672-blue">
 </p>
-
-# 🚕 Deep Learning Prediction of NYC Yellow Taxi Trip Duration Using Weather Data
 
 A neural-network regression project that predicts **NYC Yellow Taxi trip duration** from trip and weather features, comparing three architectures across two optimizers. Built for **CS672: Introduction to Deep Learning (Fall 2025)** at Pace University.
 
